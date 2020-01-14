@@ -4,18 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.milota.weatherapp.Model.City;
-import com.milota.weatherapp.Model.WeatherModel;
-import com.milota.weatherapp.RetrofitAPI.RetrofitClient;
-import com.milota.weatherapp.RetrofitAPI.WeatherService;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.milota.weatherapp.model.WeatherModel;
+import com.milota.weatherapp.retrofitAPI.RetrofitClient;
+import com.milota.weatherapp.retrofitAPI.WeatherService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,9 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private WeatherRecyclerViewAdapter mAdapter;
 
     private Retrofit retrofit = RetrofitClient.getRetrofitInstance();
-
-    List<WeatherModel> weatherList = new ArrayList<>();
-    List<City> cities = new ArrayList<>();
+    private WeatherService weatherService = retrofit.create(WeatherService.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,45 +34,30 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        bindCities();
-        init();
         bindAdapter();
-    }
-
-
-    private void bindCities() {
-        cities.add(new City("London"));
-        cities.add(new City("Stockholm"));
-        cities.add(new City("Tirana"));
-        cities.add(new City("München"));
+        init();
     }
 
     private void init(){
 
-        for(City c : cities){
+        final Call<WeatherModel> call = weatherService.getWeather("524901,703448,2643743,658226,3183875,2673730,5128581", "metric","26fbb994d78d012c388d5ecb2f45f701");
 
-            WeatherService weatherService = retrofit.create(WeatherService.class);
-            Call<WeatherModel> call = weatherService.getWeather(c.getName(),"26fbb994d78d012c388d5ecb2f45f701");
+        call.enqueue(new Callback<WeatherModel>() {
+            @Override
+            public void onResponse(Call<WeatherModel> call, Response<WeatherModel> response) {
+                mAdapter.addWeatherModel(response.body());
+            }
 
-
-            call.enqueue(new Callback<WeatherModel>() {
-                @Override
-                public void onResponse(Call<WeatherModel> call, Response<WeatherModel> response) {
-                    WeatherModel weatherModel = response.body();
-                    weatherList.add(weatherModel);
-                }
-
-                @Override
-                public void onFailure(Call<WeatherModel> call, Throwable t) {
-                    Toast.makeText(MainActivity.this,t.getMessage(),Toast.LENGTH_LONG).show();
-                }
-            });
-        }
+            @Override
+            public void onFailure(Call<WeatherModel> call, Throwable t) {
+                Toast.makeText(MainActivity.this,t.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 
     private void bindAdapter(){
-        mAdapter = new WeatherRecyclerViewAdapter(weatherList);
+        mAdapter = new WeatherRecyclerViewAdapter();
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
