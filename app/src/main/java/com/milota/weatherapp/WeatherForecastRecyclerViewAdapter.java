@@ -67,7 +67,7 @@ public class WeatherForecastRecyclerViewAdapter extends RecyclerView.Adapter<Wea
 
         void fillView(WeatherForecastModel.List weatherForecastModel) {
             Picasso.get().load(new StringBuilder("https://openweathermap.org/img/w/").append(weatherForecastModel.getWeather().get(0).getIcon()).append(".png").toString()).into(forecastIcon);
-            date.setText(getDay(weatherForecastModel.getDtTxt()) + " " + getTime(weatherForecastModel.getDtTxt()));
+            date.setText(getDay(weatherForecastModel.getDtTxt()) + ", " + getTime(weatherForecastModel.getDtTxt()));
             minTemp.setText(weatherForecastModel.getMain().getTempMin() + "°C");
             maxTemp.setText(weatherForecastModel.getMain().getTempMax() + "°C");
         }
